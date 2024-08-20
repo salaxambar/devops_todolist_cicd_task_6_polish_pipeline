@@ -17,11 +17,6 @@ on:
       helm-release-name:
         default: todoapp
         type: string
-      artifact_choice:
-        default: 'ubuntu-latest-3.8'
-        type: string
-        required: true
-
 jobs:
     deploy-helm:
       name: ${{ inputs.environment }}
@@ -36,12 +31,12 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: helm-artifacts-${{ github.event.inputs.artifact_choice }}
+          name: helm-artifacts-${{ github.event.inputs.artifact_choice || 'ubuntu-latest-3.8' }}
           path: .
 
       - uses: actions/download-artifact@v4
         with:
-          name: kind-cluster-${{ github.event.inputs.artifact_choice }}
+          name: kind-cluster-${{ github.event.inputs.artifact_choice || 'ubuntu-latest-3.8' }}
           path: .
 
       - name: Set Up Helm

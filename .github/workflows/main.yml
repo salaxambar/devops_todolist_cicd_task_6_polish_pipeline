@@ -71,21 +71,18 @@ jobs:
           flake8 . --exit-zero --max-complexity=6
 
       - name: Upload python artifacts
-        if: github.ref_name == 'main'
         uses: actions/upload-artifact@v4
         with:
           name: python-artifacts-${{ matrix.OsType }}-${{ matrix.PythonVersion }}
           path: .
 
       - name: Upload helm artifacts
-        if: github.ref_name == 'main'
         uses: actions/upload-artifact@v4
         with:
           name: helm-artifacts-${{ matrix.OsType }}-${{ matrix.PythonVersion }}
           path: ${{ github.workspace }}/helm-charts
 
       - name: Upload kind cluster artifact
-        if: github.ref_name == 'main'
         uses: actions/upload-artifact@v4
         with:
           name: kind-cluster-${{ matrix.OsType }}-${{ matrix.PythonVersion }}
@@ -94,14 +91,13 @@ jobs:
   docker-ci:
     name: Build and Push Image
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
     needs: python-ci
     steps:
 
     - uses: actions/download-artifact@v4
       name: Download python artifacts
       with:
-        name: python-artifacts-${{ github.event.inputs.artifact_choice }}
+        name: python-artifacts-${{ github.event.inputs.artifact_choice || 'ubuntu-latest-3.8' }}
         path: .
 
     - name: Login to Docker Hub
@@ -119,14 +115,13 @@ jobs:
 
   helm-ci:
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
     needs: python-ci
     name: Helm CI
     steps:
 
     - uses: actions/download-artifact@v4
       with:
-        name: helm-artifacts-${{ github.event.inputs.artifact_choice }}
+        name: helm-artifacts-${{ github.event.inputs.artifact_choice || 'ubuntu-latest-3.8' }}
         path: .
 
     - name: Set Up Helm
@@ -155,7 +150,6 @@ jobs:
     with:
       environment: development
       version: ${{ github.sha }}
-      artifact_choice: ${{ github.event.inputs.artifact_choice }}
 
   deploy-helm-stg:
     name: Deploy helm to Staging
@@ -167,4 +161,3 @@ jobs:
       version: ${{ github.sha }}
       helm-values-path: ./todoapp/values/stg.yaml
       helm-release-name: todoapp-staging
-      artifact_choice: ${{ github.event.inputs.artifact_choice }}
